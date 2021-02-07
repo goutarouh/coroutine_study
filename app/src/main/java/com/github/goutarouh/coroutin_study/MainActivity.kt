@@ -13,15 +13,40 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val flow = flow {
-            repeat(10) {
-                emit(it)
-                delay(1000L)
-            }
-        }.map { it * 424 }
+            "1回目".print()
+            emit(1)
+            delay(1000L)
+            "2回目".print()
+            emit(2)
+        }.map {
+            "map が呼ばれました。 ${it}".print()
+            it * 2
+        }
 
+
+        // 1->2  1->2　の順番で呼ばれる
+        //cold streamなのでcollectした時点で購買が始まるため
+//        runBlocking {
+//            flow.collect {
+//                "collect1: $it".print()
+//            }
+//            flow.collect {
+//                "collect2: $it".print()
+//            }
+//        }
+
+        //1,1,2,2の順番で呼ばれる
+        //cold streamなのでどちらも呼ばれる
         runBlocking {
-            flow.collect {
-                it.print()
+            launch {
+                flow.collect {
+                    "collect1: $it".print()
+                }
+            }
+            launch {
+                flow.collect {
+                    "collect2: $it".print()
+                }
             }
         }
     }
