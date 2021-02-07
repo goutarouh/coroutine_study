@@ -2,52 +2,47 @@ package com.github.goutarouh.coroutin_study
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runBlocking
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val flow = flow {
-            "1回目".print()
-            emit(1)
-            delay(1000L)
-            "2回目".print()
-            emit(2)
-        }.map {
-            "map が呼ばれました。 ${it}".print()
-            it * 2
+        val flow: Flow<Int> = flow {
+            repeat(10) {
+                emit(it)
+                delay(1000L)
+            }
         }
 
-
-        // 1->2  1->2　の順番で呼ばれる
-        //cold streamなのでcollectした時点で購買が始まるため
-//        runBlocking {
-//            flow.collect {
-//                "collect1: $it".print()
-//            }
-//            flow.collect {
-//                "collect2: $it".print()
-//            }
-//        }
-
-        //1,1,2,2の順番で呼ばれる
-        //cold streamなのでどちらも呼ばれる
+        //collectが2秒に一回なので
+        //2秒に一回しか購買しなくなる。
         runBlocking {
-            launch {
-                flow.collect {
-                    "collect1: $it".print()
-                }
-            }
-            launch {
-                flow.collect {
-                    "collect2: $it".print()
-                }
-            }
+//            flow
+//                    .onEach {
+//                        "onEach: $it".print()
+//                    }
+//                    .collect {
+//                        "collect: $it".print()
+//                        delay(2000L)
+//                    }
+
+            //bufferを使用するとため込みができるため
+            //onEachは出力される
+            flow
+                    .onEach {
+                        "onEach: $it".print()
+                    }
+                    .buffer(10)
+                    .collect {
+                        "collect: $it".print()
+                        delay(2000L)
+                    }
         }
     }
 }
