@@ -8,19 +8,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        runBlocking {
-            val deferred1 = async {
-                delay(1000L)
-                3
-            }
-
-            val deferred2 = async {
-                delay(1000L)
-                2
-            }
-
-            val sum = deferred1.await() + deferred2.await()
-            sum.print()
+        //val context = EmptyCoroutineContext
+        val context = Job()
+        val scope = CoroutineScope(context)
+        "job ${context[Job]}".print()
+        scope.launch {
+            "scope.job ${scope.coroutineContext[Job]}".print()
+            "start1".print()
+            delay(1000L)
+            "start2".print()
         }
+
+        context.cancel()
+        Thread.sleep(2000L)
+
     }
 }
