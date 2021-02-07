@@ -10,16 +10,49 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         runBlocking {
-            val pair = fetchBoth()
-            pair.print()
-        }
-    }
+            val context1 = Job()
+            val scope1 = CoroutineScope(context1)
 
-    suspend fun fetchBoth(): Pair<String, String> {
-        return coroutineScope {
-            val d1 = async { "データ" }
-            val d2 = async { "データ2" }
-            d1.await() to d2.await()
+            //5000で止まらない
+            scope1.launch {
+                var i = 0
+                while (i <= 1_000_000) {
+                    if (i % 1_000 == 0) {
+                        i.print()
+                    }
+                    if (i == 500_000) {
+                        scope1.cancel()
+                    }
+                    i++
+                }
+            }
+
+            //isActiveで自身がキャンセルされていないか確認する
+            //(suspend関数は自信がキャンセルされているか確認する)
+            //5000で止まる
+            runBlocking {
+                val context2 = Job()
+                val scope2 = CoroutineScope(context2)
+                scope2.launch {
+                    var i = 0
+                    while (i <= 1_000_00 && isActive) {
+                        if (i % 1_000 == 0) {
+                            i.print()
+                        }
+                        if (i == 500_00) {
+                            scope2.cancel()
+                        }
+                        i++
+
+                        //キャンセルされていた場合
+                        //CancellationExceptionを出す
+                        //ensureActive()
+                    }
+                }
+            }
         }
+
+
+
     }
 }
