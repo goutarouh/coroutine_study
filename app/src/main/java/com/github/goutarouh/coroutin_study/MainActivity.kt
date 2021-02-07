@@ -2,29 +2,25 @@ package com.github.goutarouh.coroutin_study
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         runBlocking {
-            val job = launch {
-                try {
-                    "start".print()
-                    delay(100L)
-                    "end".print()
-                } catch (e: CancellationException) {
-                    "catch: $e".print()
-                } finally {
-                    "finally".print()
-                }
+            val deferred1 = async {
+                delay(1000L)
+                3
             }
-            delay(50L)
-            job.cancel()
+
+            val deferred2 = async {
+                delay(1000L)
+                2
+            }
+
+            val sum = deferred1.await() + deferred2.await()
+            sum.print()
         }
     }
 }
