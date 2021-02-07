@@ -11,17 +11,34 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val scope = CoroutineScope(EmptyCoroutineContext)
-        scope.launch {
-            1.print()
-            delay(1000L)
-            2.print()
+        runBlocking {
+            val job1 = launch {
+                delay(100L)
+                "completed: job1".print()
+            }
+            val job2 = launch {
+                delay(100L)
+                "completed: job2".print()
+            }
+            job1.join()
+            job2.join()
+            "completed: all".print()
         }
-        scope.launch {
-            3.print()
-            delay(1000L)
-            4.print()
+
+        runBlocking {
+            val job1 = launch {
+                "start: job1".print()
+                delay(100L)
+                "completed: job1".print()
+            }
+            val job2 = launch {
+                "start: job2".print()
+                delay(100L)
+                "completed: job2".print()
+            }
+
+            delay(50L)
+            job1.cancel()
         }
-        scope.cancel()
     }
 }
