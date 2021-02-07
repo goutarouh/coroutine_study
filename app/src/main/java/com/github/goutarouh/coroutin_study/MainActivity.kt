@@ -2,47 +2,60 @@ package com.github.goutarouh.coroutin_study
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.lang.Exception
 import kotlin.coroutines.EmptyCoroutineContext
 
+
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val scope = CoroutineScope(EmptyCoroutineContext)
 
-        val flow1 = flow {
-            emit(1)
-            delay(50L)
-            emit(2)
-        }
-        val flow2 = flow {
-            emit(3)
-            delay(50L)
-            emit(4)
-        }
+        //MutableSharedFlowは値を外部から送信することができる。
+        //外部と共有ってことでshareかな?
+        val mutableSharedFlow = MutableSharedFlow<Int>()
 
-        val combined = combine(flow1, flow2) {t1, t2 ->
-            t1 + t2
+
+        scope.launch {
+            mutableSharedFlow.collect {
+                "collect: $it".print()
+            }
         }
 
-        //flowの合成
-        //どちらかがemitされたときに取得する
+        //cold streamなので
+        //こちらも同時に流れてきます。
+        scope.launch {
+            mutableSharedFlow.collect{
+                    "collect: $it".print()
+            }
+        }
+
+        //emitした時点で購買登録されていたもののみに発射
+        scope.launch {
+            mutableSharedFlow.emit(1)
+            delay(1000L)
+            mutableSharedFlow.emit(2)
+        }
+
         runBlocking {
-            combined.collect {
-                it.print()
+            delay(500L)
+        }
+
+        //2だけ取得する
+        scope.launch {
+            mutableSharedFlow.collect {
+                "collect! $it".print()
             }
         }
 
 
-        //launchInでネストを減らす
-        val scope = CoroutineScope(EmptyCoroutineContext)
-        flow1.onEach {
-            it.print()
-        }.launchIn(scope)
+        Thread.sleep(2000L)
     }
 }
