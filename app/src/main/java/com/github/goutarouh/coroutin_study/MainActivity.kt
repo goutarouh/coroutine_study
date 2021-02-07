@@ -8,19 +8,24 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //val context = EmptyCoroutineContext
-        val context = Job()
-        val scope = CoroutineScope(context)
-        "job ${context[Job]}".print()
-        scope.launch {
-            "scope.job ${scope.coroutineContext[Job]}".print()
-            "start1".print()
-            delay(1000L)
-            "start2".print()
+        val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+            "catchしたよ: ${throwable}".print()
         }
 
-        context.cancel()
-        Thread.sleep(2000L)
+        //val context = Job() + exceptionHandler
+        val context = SupervisorJob() + exceptionHandler
 
+        val scope = CoroutineScope(context)
+
+        scope.launch {
+            delay(500L)
+            throw Exception("error")
+        }
+
+        scope.launch {
+            delay(1000L)
+            "completed2".print()
+        }
+        Thread.sleep(2000L)
     }
 }
