@@ -10,11 +10,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         runBlocking {
-            val result = withTimeoutOrNull(100L) {
-                delay(10L)
-                10
-            } ?: 100
-            result.print()
+            val pair = fetchBoth()
+            pair.print()
+        }
+    }
+
+    suspend fun fetchBoth(): Pair<String, String> {
+        return coroutineScope {
+            val d1 = async { "データ" }
+            val d2 = async { "データ2" }
+            d1.await() to d2.await()
         }
     }
 }
